@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8"><title>Lab 2</title>
+<body><script>
+const S = Array.from({length:12}, () => Array(12).fill(100));
+S[0][0] = 0; S[1][1] = 0;
+
+function nearest(r,c) {
+  return S[Math.floor(r/2)][Math.floor(c/2)];
+}
+
+function bilinear(r,c) {
+  const x = Math.max(0,Math.min(11,(c+0.5)/2-0.5));
+  const y = Math.max(0,Math.min(11,(r+0.5)/2-0.5));
+  const x0 = Math.floor(x), y0 = Math.floor(y);
+  const x1 = Math.min(11,x0+1), y1 = Math.min(11,y0+1);
+  const tx = x-x0, ty = y-y0;
+  const top = (1-tx)*S[y0][x0] + tx*S[y0][x1];
+  const bottom = (1-tx)*S[y1][x0] + tx*S[y1][x1];
+  return (1-ty)*top + ty*bottom;
+}
+
+for (const sample of [nearest,bilinear]) {
+  const label = document.createElement("p");
+  label.textContent = sample.name; document.body.append(label);
+
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 24;
+  cv.style.cssText = "width:240px;height:240px;" +
+    "image-rendering:pixelated;border:1px solid black";
+  document.body.append(cv);
+
+  const ctx = cv.getContext("2d");
+  for (let r=0;r<24;r++) for (let c=0;c<24;c++) {
+    const b = Math.round(sample(r,c)*255/100);
+    ctx.fillStyle = `rgb(${b},${b},${b})`;
+    ctx.fillRect(c,r,1,1);
+  }
+
+  const report = document.createElement("pre");
+  report.textContent = [[1,1],[1,2],[2,1],[2,2]]
+    .map(([r,c]) => `D[${r}][${c}] = ${sample(r,c)}`).join("\n");
+  document.body.append(report);
+}
+</script></body>

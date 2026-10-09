@@ -1,0 +1,105 @@
+Lab 2 - Image Enlargement
+answers.txt
+
+1) Destination-pixel calculations
+
+Source top-left patch:
+S[0][0] = 0
+S[0][1] = 100
+S[1][0] = 100
+S[1][1] = 0
+
+D[1][1]
+Source x = (1 + 0.5)/2 - 0.5 = 0.25
+Source y = (1 + 0.5)/2 - 0.5 = 0.25
+Nearest = S[floor(1/2)][floor(1/2)] = S[0][0] = 0
+top = (1 - 0.25)*0 + 0.25*100 = 25
+bottom = (1 - 0.25)*100 + 0.25*0 = 75
+Bilinear = (1 - 0.25)*25 + 0.25*75 = 37.5
+
+D[1][2]
+Source x = (2 + 0.5)/2 - 0.5 = 0.75
+Source y = (1 + 0.5)/2 - 0.5 = 0.25
+Nearest = S[floor(1/2)][floor(2/2)] = S[0][1] = 100
+top = (1 - 0.75)*0 + 0.75*100 = 75
+bottom = (1 - 0.75)*100 + 0.75*0 = 25
+Bilinear = (1 - 0.25)*75 + 0.25*25 = 62.5
+
+D[2][1]
+Source x = (1 + 0.5)/2 - 0.5 = 0.25
+Source y = (2 + 0.5)/2 - 0.5 = 0.75
+Nearest = S[floor(2/2)][floor(1/2)] = S[1][0] = 100
+top = (1 - 0.25)*0 + 0.25*100 = 25
+bottom = (1 - 0.25)*100 + 0.25*0 = 75
+Bilinear = (1 - 0.75)*25 + 0.75*75 = 62.5
+
+D[2][2]
+Source x = (2 + 0.5)/2 - 0.5 = 0.75
+Source y = (2 + 0.5)/2 - 0.5 = 0.75
+Nearest = S[floor(2/2)][floor(2/2)] = S[1][1] = 0
+top = (1 - 0.75)*0 + 0.75*100 = 75
+bottom = (1 - 0.75)*100 + 0.75*0 = 25
+Bilinear = (1 - 0.75)*75 + 0.75*25 = 37.5
+
+Completed table:
+Destination   Source x   Source y   Nearest   Bilinear
+D[1][1]       0.25       0.25       0         37.5
+D[1][2]       0.75       0.25       100       62.5
+D[2][1]       0.25       0.75       100       62.5
+D[2][2]       0.75       0.75       0         37.5
+
+2) Why the same four source pixels can contribute to all four destination pixels
+
+All four destination pixel centers map to positions inside the same square bounded by
+S[0][0], S[0][1], S[1][0], and S[1][1]. Bilinear interpolation therefore uses the
+same four source samples for all four destinations, but with different horizontal
+and vertical weights.
+
+The 24 x 24 destination contains 576 output values, but these are not 576 independent
+source measurements. They are copied or interpolated from the original 12 x 12 = 144
+source values. Enlargement creates more output samples, not new measured detail.
+
+3) Original browser reports
+
+Nearest:
+D[1][1] = 0
+D[1][2] = 100
+D[2][1] = 100
+D[2][2] = 0
+
+Bilinear:
+D[1][1] = 37.5
+D[1][2] = 62.5
+D[2][1] = 62.5
+D[2][2] = 37.5
+
+4) After changing S[0][0] from 0 to 100
+
+Nearest:
+D[1][1] = 100   (changed)
+D[1][2] = 100   (unchanged)
+D[2][1] = 100   (unchanged)
+D[2][2] = 0     (unchanged)
+
+Only D[1][1] changes for nearest neighbor because each destination copies one source value.
+
+Bilinear:
+D[1][1] = 93.75
+D[1][2] = 81.25
+D[2][1] = 81.25
+D[2][2] = 43.75
+
+All four values change for bilinear interpolation because S[0][0] contributes, with
+different weights, to each of these four destination values.
+
+5) Comparison and observations
+
+Nearest neighbor keeps sharp, block-like regions because it copies one source value
+directly into each destination location.
+
+Bilinear interpolation creates gray transitions because it blends neighboring source
+values according to their relative position.
+
+Neither method recovers missing detail. Nearest neighbor only repeats existing samples,
+and bilinear interpolation only estimates intermediate values from existing samples.
+Neither method creates new independent source information.
